@@ -20,8 +20,6 @@ I
 index.html,f/6/f6013a00b362253c64368d6eebc50ea2131754e2
 <
 Gemfile.lock,2/1/21fb5836b499a2be648386aac055d2e069160d6c
-7
-Gemfile,d/e/de3150c01c3a946a6168173c4116741379fe3579
 >
 Dockerfile.dev,5/0/5097cd467d1a52423d6921e6ce2f907ddec2e81c
 <
@@ -34,21 +32,7 @@ H
 assets/browserconfig.xml,4/7/478bfa68cc19deeca0931047f9318469d46b3739
 B
 _layouts/page.html,8/b/8b421129e621bb2aca5057f6bdb5e5905633134c
-B
-_layouts/none.html,b/b/bbcc46623737880183d33f0ba2de41a13ca8ec02
-E
-_layouts/landing.html,3/f/3f13d46c9d4b87e444212039a86787381a7403eb
-B
-_layouts/home.html,f/8/f87bb2fcce406e16253570011cce02227981f242
-B
-_layouts/base.html,f/a/fac19915e04f11d831dcabfe2030041c085ab6be
 F
 _layouts/articles.html,9/c/9c3aeb8fcf13f96fefd10f36f2e7c0f4ffca2a80
-E
-_layouts/article.html,0/a/0aec7572dc4ef0936e2a31b0a628dab736aa0502
-E
-_layouts/archive.html,7/b/7b0f942d0bd00b54bcbb6945702f72853187019b
-A
-_layouts/404.html,5/6/5633fb093e6857af732662e6877ce7113c3a4701
 D
 assets/css/main.scss,3/9/39a50fefad724cd0aa7b6ec792325957ea1751b3
