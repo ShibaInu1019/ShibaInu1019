@@ -1,9 +1,6 @@
 
 A
 _data/authors.yml,4/b/4b8e7c7767a56cc5d0bcc3a6a635fd40ab0041a1
-:
-
-.gitignore,a/5/a5cc2925ca8258af241be7e5b0381edf30266302
 C
 _data/variables.yml,9/c/9c10aac0403a20351e8c9834c0647b53498cb34c
 D
@@ -12,10 +9,6 @@ B
 _data/licenses.yml,6/f/6f915df61fa5a76012d10489ee082319ff591bd7
 @
 _data/locale.yml,4/e/4ed2a283d0ad65f7cdee4bc6c8fed6a932cf3a73
-Q
-!_posts/2018-06-01-header-image.md,0/3/03258e1ac25e83bb1317c15ba9a061695d19ffc2
-L
-_posts/2018-07-01-welcome.md,b/5/b5bc5a8f13c637dd9188b734b8a5a9cdb0639999
 I
 jekyll-text-theme.gemspec,9/c/9ce3fa0bf76e0e17f0f38e36614447d8ba56691b
 7
@@ -25,8 +18,6 @@ I
 :
 
 index.html,f/6/f6013a00b362253c64368d6eebc50ea2131754e2
-A
-HOW_TO_RELEASE.md,2/7/27418bc60bdd96e6485debc525bdbbb788fb2fa7
 <
 Gemfile.lock,2/1/21fb5836b499a2be648386aac055d2e069160d6c
 7
@@ -37,16 +28,6 @@ A
 .stylelintrc,9/a/9a288bcd72683293e66f7752dc726e9683204c0c
 @
 .commitlintrc.js,4/b/4baf7563bc2391afe6f4fb0f57cfea02dbe5da66
-F
-test/_data/authors.yml,c/1/c12e1033545b4d3dadf1e2c73c16f245ac66652d
-G
-test/_data/licenses.yml,1/8/188463798644d2ca94937317c8df586554b615f9
-E
-test/_data/locale.yml,9/8/983daefaed96c7b1f180d42b6b84beef3fc0de49
-I
-test/_data/navigation.yml,b/b/bb49615d68333a8a182ce1635a1b941bb0a5b3da
-H
-test/_data/variables.yml,9/a/9a1ccb598cef5130b8c959ef706f98b5165ae16a
 A
 docker/nginx.conf,b/9/b93a586cc12cc862436e9bb6dcab39a3420e736b
 H
