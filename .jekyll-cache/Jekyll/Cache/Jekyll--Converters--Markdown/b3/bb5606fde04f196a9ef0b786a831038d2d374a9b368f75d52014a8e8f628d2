@@ -1,0 +1,663 @@
+I"W�<p>设计模式！
+<!--more--></p>
+<h1 id="创建型模式">创建型模式</h1>
+
+<h2 id="单例模式">单例模式</h2>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210730152523297.png" alt="image-20210730152523297.png" /></p>
+
+<p>使用私有构造函数、私有静态变量与共有静态方法。</p>
+
+<p>私有构造函数保证Singleton不能被外部实例化，只能通过共有静态方法来获取唯一的静态变量。</p>
+
+<h3 id="懒汉式-线程不安全">懒汉式-线程不安全</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span><span class="o">{</span>
+  <span class="kd">private</span> <span class="kd">static</span> <span class="nc">Singleton</span> <span class="n">uniqueInstance</span><span class="o">;</span>
+
+  <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">(){}</span>
+
+  <span class="kd">public</span> <span class="nc">Singleton</span> <span class="nf">getUniqueInstance</span><span class="o">(){</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">uniqueInstance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">){</span>
+      <span class="n">uniqueInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Singleton</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">uniqueInstance</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="饿汉式-线程安全">饿汉式-线程安全</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//线程不安全问题主要是由于 uniqueInstance 被实例化多次，采取直接实例化 uniqueInstance 的方式就不会产生线程不安全问题。</span>
+<span class="c1">//但是直接实例化的方式也丢失了延迟实例化带来的节约资源的好处。</span>
+<span class="kd">private</span> <span class="kd">static</span> <span class="nc">Singleton</span> <span class="n">uniqueInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Singleton</span><span class="o">();</span>
+</code></pre></div></div>
+
+<h3 id="懒汉式-线程安全">懒汉式-线程安全</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//只需要对 getUniqueInstance() 方法加锁，那么在一个时间点只能有一个线程能够进入该方法，从而避免了实例化多次 uniqueInstance。</span>
+<span class="kd">public</span> <span class="kd">static</span> <span class="kd">synchronized</span> <span class="nc">Singleton</span> <span class="nf">getUniqueInstance</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">uniqueInstance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">uniqueInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Singleton</span><span class="o">();</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">uniqueInstance</span><span class="o">;</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="双重校验锁-线程安全">双重校验锁-线程安全</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span> <span class="o">{</span>
+
+  <span class="cm">/*
+  为 uniqueInstance 分配内存空间
+	初始化 uniqueInstance
+	将 uniqueInstance 指向分配的内存地址
+
+	volatile禁止指令重排
+  */</span>
+    <span class="kd">private</span> <span class="kd">volatile</span> <span class="kd">static</span> <span class="nc">Singleton</span> <span class="n">uniqueInstance</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+	<span class="c1">//两次if可以防止等待锁，加锁保证只能有一个线程进行实例化</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="nc">Singleton</span> <span class="nf">getUniqueInstance</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">uniqueInstance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+            <span class="kd">synchronized</span> <span class="o">(</span><span class="nc">Singleton</span><span class="o">.</span><span class="na">class</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">uniqueInstance</span> <span class="o">==</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="n">uniqueInstance</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Singleton</span><span class="o">();</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">uniqueInstance</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="静态内部类">静态内部类</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+当 Singleton 类被加载时，静态内部类 SingletonHolder 没有被加载进内存。只有当调用 getUniqueInstance() 方法从而触发 SingletonHolder.INSTANCE 时 SingletonHolder 才会被加载，此时初始化 INSTANCE 实例，并且 JVM 能确保 INSTANCE 只被实例化一次。
+*/</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Singleton</span><span class="o">{</span>
+  <span class="kd">private</span> <span class="nf">Singleton</span><span class="o">(){}</span>
+
+  <span class="kd">private</span> <span class="kd">static</span> <span class="kd">class</span> <span class="nf">SingletonHolder</span><span class="o">(){</span>
+    <span class="kd">private</span> <span class="kd">static</span> <span class="kd">final</span> <span class="nc">Singleton</span> <span class="no">INSTANCE</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Singleton</span><span class="o">();</span>
+  <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kd">static</span> <span class="nc">Singleton</span> <span class="nf">getUniqueInstance</span><span class="o">(){</span>
+    <span class="k">return</span> <span class="nc">SingletonHolder</span><span class="o">.</span><span class="na">INSTANCE</span><span class="o">;</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="枚举">枚举</h3>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*
+可以防止反射攻击
+*/</span>
+<span class="kd">public</span> <span class="nc">Enum</span> <span class="nc">Singleton</span><span class="o">{</span>
+
+  <span class="no">INSTANCE</span><span class="o">;</span>
+
+  <span class="kd">private</span> <span class="nc">String</span> <span class="n">objName</span><span class="o">;</span>
+
+  <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getObjName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">objName</span><span class="o">;</span>
+    <span class="o">}</span>
+
+  <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setObjName</span><span class="o">(</span><span class="nc">String</span> <span class="n">objName</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">objName</span> <span class="o">=</span> <span class="n">objName</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="工厂模式静态工厂">工厂模式（静态工厂）</h2>
+
+<p>在创建一个对象时不向客户暴露内部细节，并提供一个创建对象的通用接口。</p>
+
+<p>简单工厂把<strong>实例化的操作单独放到一个类</strong>中，这个类就成为简单工厂类，让简单工厂类来决定应该用哪个具体子类来实例化。</p>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210802101815264.png" alt="image-20210802101815264" /></p>
+
+<h3 id="javatextdateformat中的简单工厂模式">java.text.DateFormat中的简单工厂模式</h3>
+
+<p>DateFormat是一个抽象类（abstract），getDateInstance方法将具体子类的实例化过程隐藏起来了，调用者不必考虑具体子类的实例化，因为抽象类会提供它的合适子类实例。</p>
+
+<ol>
+  <li>运用了多态性：由于SimpleDateFormat是DateFormat的子类，而getDateInstance()声明的类型为DateFormat而实际返回类型为子类SimpleDateFormat</li>
+  <li>使用了静态工厂方法（static）：由于DateFormat是抽象类不能进行实例化，因此也就不能调用其中的普通方法（非静态方法）。因此我们必须将其声明为static,才能返回实例</li>
+</ol>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="nc">DateFormat</span> <span class="nf">getDateInstance</span><span class="o">()</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">get</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="no">DEFAULT</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="nc">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="nc">DateFormat</span> <span class="nf">getDateInstance</span><span class="o">(</span><span class="kt">int</span> <span class="n">style</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">get</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">style</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="nc">Locale</span><span class="o">.</span><span class="na">getDefault</span><span class="o">());</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kd">final</span> <span class="kd">static</span> <span class="nc">DateFormat</span> <span class="nf">getDateInstance</span><span class="o">(</span><span class="kt">int</span> <span class="n">style</span><span class="o">,</span>
+                                                 <span class="nc">Locale</span> <span class="n">aLocale</span><span class="o">)</span>
+    <span class="o">{</span>
+        <span class="k">return</span> <span class="nf">get</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">style</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="n">aLocale</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="kd">static</span> <span class="nc">DateFormat</span> <span class="nf">get</span><span class="o">(</span><span class="kt">int</span> <span class="n">timeStyle</span><span class="o">,</span> <span class="kt">int</span> <span class="n">dateStyle</span><span class="o">,</span>
+                                  <span class="kt">int</span> <span class="n">flags</span><span class="o">,</span> <span class="nc">Locale</span> <span class="n">loc</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">1</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">timeStyle</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">timeStyle</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">"Illegal time style "</span> <span class="o">+</span> <span class="n">timeStyle</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">timeStyle</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">if</span> <span class="o">((</span><span class="n">flags</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="o">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">dateStyle</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">dateStyle</span> <span class="o">&gt;</span> <span class="mi">3</span><span class="o">)</span> <span class="o">{</span>
+                <span class="k">throw</span> <span class="k">new</span> <span class="nf">IllegalArgumentException</span><span class="o">(</span><span class="s">"Illegal date style "</span> <span class="o">+</span> <span class="n">dateStyle</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">dateStyle</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="c1">// Check whether a provider can provide an implementation that's closer</span>
+            <span class="c1">// to the requested locale than what the Java runtime itself can provide.</span>
+            <span class="nc">LocaleServiceProviderPool</span> <span class="n">pool</span> <span class="o">=</span>
+                <span class="nc">LocaleServiceProviderPool</span><span class="o">.</span><span class="na">getPool</span><span class="o">(</span><span class="nc">DateFormatProvider</span><span class="o">.</span><span class="na">class</span><span class="o">);</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">pool</span><span class="o">.</span><span class="na">hasProviders</span><span class="o">())</span> <span class="o">{</span>
+                <span class="nc">DateFormat</span> <span class="n">providersInstance</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="na">getLocalizedObject</span><span class="o">(</span>
+                                                    <span class="nc">DateFormatGetter</span><span class="o">.</span><span class="na">INSTANCE</span><span class="o">,</span>
+                                                    <span class="n">loc</span><span class="o">,</span>
+                                                    <span class="n">timeStyle</span><span class="o">,</span>
+                                                    <span class="n">dateStyle</span><span class="o">,</span>
+                                                    <span class="n">flags</span><span class="o">);</span>
+                <span class="k">if</span> <span class="o">(</span><span class="n">providersInstance</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                    <span class="k">return</span> <span class="n">providersInstance</span><span class="o">;</span>
+                <span class="o">}</span>
+            <span class="o">}</span>
+
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="n">timeStyle</span><span class="o">,</span> <span class="n">dateStyle</span><span class="o">,</span> <span class="n">loc</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">MissingResourceException</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="nf">SimpleDateFormat</span><span class="o">(</span><span class="s">"M/d/yy h:mm a"</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="总结">总结</h3>
+
+<p>优点：</p>
+
+<ul>
+  <li>将创建实例的工作与使用实例的工作分开，使用者不必关心类对象如何创建，明确了职责</li>
+  <li>把初始化实例时的工作放到工厂里进行，使代码更容易维护。更符合面向对象的原则，面向接口编程，而不是面向实现编程</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+  <li>由于工厂类集中了所有产品创建逻辑，一旦不能正常工作，整个系统都要受到影响</li>
+  <li>要新增产品类的时候，就要修改工厂类的代码，<strong>违反了开放封闭原则</strong>（对扩展的开放，对修改的关闭）</li>
+  <li>简单工厂模式由于使用了静态工厂方法，造成工厂角色无法形成基于继承的等级结构。（因为静态方法可以被继承，但是不能重写，无法实现多态）</li>
+</ul>
+
+<h2 id="工厂方法模式接口抽象">工厂方法模式（接口/抽象）</h2>
+
+<p>定义了一个创建对象的接口，但由子类决定要实例化哪个类，工厂方法把<strong>实例化操作推迟到子类</strong>。</p>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210802152737868.png" alt="image-20210802152737868" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//简单工厂模式中的工厂类</span>
+<span class="kd">public</span> <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Factory</span> <span class="o">{</span>
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="nc">Product</span> <span class="nf">factoryMethod</span><span class="o">();</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">doSomething</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Product</span> <span class="n">product</span> <span class="o">=</span> <span class="n">factoryMethod</span><span class="o">();</span>
+        <span class="c1">// do something with the product</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteFactory</span> <span class="kd">extends</span> <span class="nc">Factory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Product</span> <span class="nf">factoryMethod</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ConcreteProduct</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteFactory1</span> <span class="kd">extends</span> <span class="nc">Factory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Product</span> <span class="nf">factoryMethod</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ConcreteProduct1</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">ConcreteFactory2</span> <span class="kd">extends</span> <span class="nc">Factory</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Product</span> <span class="nf">factoryMethod</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">ConcreteProduct2</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="总结-1">总结</h3>
+
+<p>优点：</p>
+
+<ul>
+  <li>更符合开-闭原则：新增一种产品时，只需要增加相应的具体产品类和相应的工厂子类即可</li>
+  <li>符合单一职责原则：每个具体工厂类只负责创建对应的产品</li>
+  <li>不使用静态工厂方法，可以形成基于继承的等级结构</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+  <li>添加新产品时，除了增加新产品类外，还要提供与之对应的具体工厂类，系统类的个数将成对增加，在一定程度上增加了系统的复杂度；同时，有更多的类需要编译和运行，会给系统带来一些额外的开销</li>
+  <li>虽然保证了工厂方法内的对修改关闭，但对于使用工厂方法的类，如果要更换另外一种产品，仍然需要修改实例化的具体工厂类</li>
+  <li>一个具体工厂只能创建一种具体产品</li>
+</ul>
+
+<h2 id="抽象工厂模式抽象接口">抽象工厂模式（抽象/接口）</h2>
+
+<p>抽象工厂模式创建的是<strong>对象家族</strong>，也就是<strong>很多对象而不是一个对象</strong>，并且这些<strong>对象是相关的</strong>，也就是说必须一起创建出来。工厂方法模式只是用于创建一个对象。</p>
+
+<blockquote>
+  <p>抽象工厂模式也就是将工厂进行抽象，用户可以针对工厂的多态来创建出产品族（产品不同，但是有相同点）。</p>
+
+  <p>在对产品和工厂的抽象时有用到工厂方法模式。</p>
+</blockquote>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210802160732919.png" alt="image-20210802160732919" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//原料接口——面团</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Dough</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">doughType</span><span class="o">();</span>
+<span class="o">}</span>
+<span class="c1">//原料接口——酱汁</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">Sauce</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">sauceType</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="c1">//原料接口具体实现</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">BigDough</span> <span class="kd">implements</span> <span class="nc">Dough</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">doughType</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"大面团"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SmallDough</span> <span class="kd">implements</span> <span class="nc">Dough</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">doughType</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"小面团"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">TomatoSauce</span> <span class="kd">implements</span> <span class="nc">Sauce</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">sauceType</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"番茄酱"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">PotatoSauce</span> <span class="kd">implements</span> <span class="nc">Sauce</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">sauceType</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"土豆酱"</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="c1">//抽象工厂</span>
+<span class="kd">public</span> <span class="kd">interface</span> <span class="nc">IngredientFactory</span> <span class="o">{</span>
+
+    <span class="kd">public</span> <span class="nc">Dough</span> <span class="nf">createDough</span><span class="o">();</span>
+
+    <span class="kd">public</span> <span class="nc">Sauce</span> <span class="nf">createSauce</span><span class="o">();</span>
+<span class="o">}</span>
+
+<span class="c1">//抽象工厂实现——LA</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LAFactory</span> <span class="kd">implements</span> <span class="nc">IngredientFactory</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Dough</span> <span class="nf">createDough</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">SmallDough</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Sauce</span> <span class="nf">createSauce</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">TomatoSauce</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+<span class="c1">//抽象工厂——NewYork</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">NewYorkFactory</span> <span class="kd">implements</span> <span class="nc">IngredientFactory</span> <span class="o">{</span>
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Dough</span> <span class="nf">createDough</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">BigDough</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Sauce</span> <span class="nf">createSauce</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="nf">PotatoSauce</span><span class="o">();</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">//具体工厂实现</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LAStore</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="nc">IngredientFactory</span> <span class="n">factory</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">LAStore</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">factory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">LAFactory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">make</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Dough</span> <span class="n">dough</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">createDough</span><span class="o">();</span>
+        <span class="nc">Sauce</span> <span class="n">sauce</span> <span class="o">=</span> <span class="n">factory</span><span class="o">.</span><span class="na">createSauce</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">dough</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sauce</span><span class="o">);</span>
+
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">NewYorkStore</span> <span class="o">{</span>
+    <span class="kd">private</span> <span class="nc">IngredientFactory</span> <span class="n">ingredientFactory</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">NewYorkStore</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">ingredientFactory</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">NewYorkFactory</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">make</span><span class="o">()</span> <span class="o">{</span>
+        <span class="nc">Dough</span> <span class="n">dough</span> <span class="o">=</span> <span class="n">ingredientFactory</span><span class="o">.</span><span class="na">createDough</span><span class="o">();</span>
+        <span class="nc">Sauce</span> <span class="n">sauce</span> <span class="o">=</span> <span class="n">ingredientFactory</span><span class="o">.</span><span class="na">createSauce</span><span class="o">();</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">dough</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">sauce</span><span class="o">);</span>
+    <span class="o">}</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h3 id="总结-2">总结</h3>
+
+<p>优点：</p>
+
+<ul>
+  <li>抽象工厂模式隔离了具体类的生产，使得客户并不需要知道什么被创建。</li>
+  <li>当一个产品族中的多个对象被设计成一起工作时，它能保证客户端始终只使用同一个产品族中的对象。</li>
+  <li>增加新的具体工厂和产品族很方便，无须修改已有系统，符合“开闭原则”。</li>
+</ul>
+
+<p>缺点：</p>
+
+<ul>
+  <li>增加新的产品等级结构很复杂，需要修改抽象工厂和所有的具体工厂类，对“开闭原则”的支持呈现倾斜性。</li>
+</ul>
+
+<h3 id="使用场景">使用场景</h3>
+
+<ul>
+  <li>当系统所提供的工厂所需生产的具体产品并不是一个简单的对象，而是多个位于不同产品等级结构中属于不同类型的具体产品时需要使用抽象工厂模式。</li>
+  <li>系统中有多于一个的产品族，而每次只使用其中某一产品族。</li>
+  <li>系统提供一个产品类的库，所有的产品以同样的接口出现，从而使客户端不依赖于具体实现。</li>
+</ul>
+
+<h2 id="生成器模式">生成器模式</h2>
+
+<p>封装一个对象的构造过程，并允许按步骤构造，例如StringBuilder、StringBuffer都是继承了AbstractStringBuilder类</p>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210802173101196.png" alt="image-20210802173101196" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//键盘实体类</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Keyboard</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">pcb</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">positioningPlate</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">mat</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">Keyboard</span><span class="o">()</span> <span class="o">{</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getPcb</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">pcb</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPcb</span><span class="o">(</span><span class="nc">String</span> <span class="n">pcb</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">pcb</span> <span class="o">=</span> <span class="n">pcb</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getPositioningPlate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">positioningPlate</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setPositioningPlate</span><span class="o">(</span><span class="nc">String</span> <span class="n">positioningPlate</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">positioningPlate</span> <span class="o">=</span> <span class="n">positioningPlate</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getMat</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">mat</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setMat</span><span class="o">(</span><span class="nc">String</span> <span class="n">mat</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">mat</span> <span class="o">=</span> <span class="n">mat</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"Keyboard{"</span> <span class="o">+</span>
+                <span class="s">"pcb='"</span> <span class="o">+</span> <span class="n">pcb</span> <span class="o">+</span> <span class="sc">'\''</span> <span class="o">+</span>
+                <span class="s">", positioningPlate='"</span> <span class="o">+</span> <span class="n">positioningPlate</span> <span class="o">+</span> <span class="sc">'\''</span> <span class="o">+</span>
+                <span class="s">", mat='"</span> <span class="o">+</span> <span class="n">mat</span> <span class="o">+</span> <span class="sc">'\''</span> <span class="o">+</span>
+                <span class="sc">'}'</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="c1">//构建者（Builder）</span>
+<span class="kd">public</span>  <span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">KeyboardBuilder</span> <span class="o">{</span>
+
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPcb</span><span class="o">();</span>
+
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPositioningPlate</span><span class="o">();</span>
+
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createMat</span><span class="o">();</span>
+
+    <span class="kd">abstract</span> <span class="kd">public</span> <span class="nc">Keyboard</span> <span class="nf">getKeyboard</span><span class="o">();</span>
+
+<span class="o">}</span>
+
+<span class="c1">//具体构建者（KBD）</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">KBDKeyboardBuilder</span> <span class="kd">extends</span> <span class="nc">KeyboardBuilder</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">Keyboard</span> <span class="n">keyboard</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">KBDKeyboardBuilder</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Keyboard</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPcb</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setPcb</span><span class="o">(</span><span class="s">"热插拔PCB"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPositioningPlate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setPositioningPlate</span><span class="o">(</span><span class="s">"FR4定位板"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createMat</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setMat</span><span class="o">(</span><span class="s">"硅胶垫"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Keyboard</span> <span class="nf">getKeyboard</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">keyboard</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="c1">//具体构建者（Sam）</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">SamKeyboardBuilder</span> <span class="kd">extends</span> <span class="nc">KeyboardBuilder</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">Keyboard</span> <span class="n">keyboard</span><span class="o">;</span>
+
+    <span class="kd">public</span> <span class="nf">SamKeyboardBuilder</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Keyboard</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPcb</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setPcb</span><span class="o">(</span><span class="s">"焊接PCB"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createPositioningPlate</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setPositioningPlate</span><span class="o">(</span><span class="s">"黄铜定位板"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">createMat</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">keyboard</span><span class="o">.</span><span class="na">setMat</span><span class="o">(</span><span class="s">"轴下垫"</span><span class="o">);</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">Keyboard</span> <span class="nf">getKeyboard</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">keyboard</span><span class="o">;</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+
+<span class="c1">//导演（Director）</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">KeyboardDirector</span> <span class="o">{</span>
+
+
+    <span class="kd">public</span> <span class="nf">KeyboardDirector</span><span class="o">(</span><span class="nc">KeyboardBuilder</span> <span class="n">keyboardBuilder</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">keyboardBuilder</span><span class="o">.</span><span class="na">createPcb</span><span class="o">();</span>
+        <span class="n">keyboardBuilder</span><span class="o">.</span><span class="na">createPositioningPlate</span><span class="o">();</span>
+        <span class="n">keyboardBuilder</span><span class="o">.</span><span class="na">createMat</span><span class="o">();</span>
+    <span class="o">}</span>
+
+<span class="c1">//测试</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">KBDKeyboardBuilder</span> <span class="n">kbdKeyboardBuilder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">KBDKeyboardBuilder</span><span class="o">();</span>
+        <span class="nc">SamKeyboardBuilder</span> <span class="n">samKeyboardBuilder</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">SamKeyboardBuilder</span><span class="o">();</span>
+
+        <span class="nc">KeyboardDirector</span> <span class="n">director</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">KeyboardDirector</span><span class="o">(</span><span class="n">kbdKeyboardBuilder</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">kbdKeyboardBuilder</span><span class="o">.</span><span class="na">getKeyboard</span><span class="o">());</span>
+        <span class="n">director</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">KeyboardDirector</span><span class="o">(</span><span class="n">samKeyboardBuilder</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">samKeyboardBuilder</span><span class="o">.</span><span class="na">getKeyboard</span><span class="o">());</span>
+
+    <span class="o">}</span>
+
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210803102906369.png" alt="image-20210803102906369" /></p>
+
+<h3 id="优点">优点</h3>
+
+<p>1、 生成器模式的使用使得产品的内部表象可以独立的变化。使用生成器模式可以使客户端不必知道产品内部组成的细节。
+2、 每个特定的生成器都独立于其它生成器和程序的其余部分，这提高拉模块化程度，并使得添加其生成器变的灵活简单。
+3、 因为每一个生成器都是根据数据来逐步构造出最终的产品的，因此对生成器构造的每个最终产品从头到尾有更好的控制能力。</p>
+
+<h3 id="使用场景-1">使用场景</h3>
+
+<p>1、 产品对象的内部结构需要有不同的展示。
+2、 不同的展示对象属性依赖与同一个产品对象，产品对象内部顺序可自行调整使用。
+3、 在对象创建过程中会使用到系统中的一些其它对象，这些对象在产品对象的创建过程中不易得到。</p>
+
+<h2 id="原型模式深拷贝">原型模式（深拷贝）</h2>
+
+<p>使用原型实例指定要创建对象的类型，通过复制这个原型来创建新对象。原型模式用于创建重复的对象（或者不完全重复的对象），实现对象的拷贝。</p>
+
+<p>比如：如果一个对象的数据需要经过较高代价的数据库操作，采用原型模式能够较好的缓存当前对象，减少数据库的访问量。</p>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210803103638252.png" alt="image-20210803103638252" /></p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//原型</span>
+<span class="kd">abstract</span> <span class="kd">class</span> <span class="nc">Prototype</span> <span class="o">{</span>
+
+    <span class="kd">abstract</span> <span class="nc">Prototype</span> <span class="nf">cloneNew</span><span class="o">();</span>
+<span class="o">}</span>
+
+
+<span class="c1">//具体原型</span>
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">Phone</span> <span class="kd">extends</span> <span class="nc">Prototype</span> <span class="o">{</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">name</span><span class="o">;</span>
+
+    <span class="kd">private</span> <span class="nc">String</span> <span class="n">color</span><span class="o">;</span>
+
+    <span class="nd">@Override</span>
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">toString</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="s">"{"</span> <span class="o">+</span>
+                <span class="s">"name='"</span> <span class="o">+</span> <span class="n">name</span> <span class="o">+</span> <span class="sc">'\''</span> <span class="o">+</span>
+                <span class="s">", color='"</span> <span class="o">+</span> <span class="n">color</span> <span class="o">+</span> <span class="sc">'\''</span> <span class="o">+</span>
+                <span class="sc">'}'</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getName</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setName</span><span class="o">(</span><span class="nc">String</span> <span class="n">name</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">=</span> <span class="n">name</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getColor</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">color</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="kt">void</span> <span class="nf">setColor</span><span class="o">(</span><span class="nc">String</span> <span class="n">color</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">this</span><span class="o">.</span><span class="na">color</span> <span class="o">=</span> <span class="n">color</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="nd">@Override</span>
+    <span class="nc">Phone</span> <span class="nf">cloneNew</span><span class="o">()</span> <span class="o">{</span>
+
+        <span class="nc">Phone</span> <span class="n">phone</span> <span class="o">=</span> <span class="kc">null</span><span class="o">;</span>
+
+        <span class="k">try</span> <span class="o">{</span>
+            <span class="n">phone</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Phone</span><span class="o">();</span>
+            <span class="k">if</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">name</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">phone</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">name</span><span class="o">);</span>
+            <span class="o">}</span>
+            <span class="k">if</span> <span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">color</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+                <span class="n">phone</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="k">this</span><span class="o">.</span><span class="na">color</span><span class="o">);</span>
+            <span class="o">}</span>
+        <span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">throw</span> <span class="k">new</span> <span class="nf">RuntimeException</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">phone</span><span class="o">;</span>
+    <span class="o">}</span>
+
+<span class="c1">//测试</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">Phone</span> <span class="n">phone</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Phone</span><span class="o">();</span>
+        <span class="n">phone</span><span class="o">.</span><span class="na">setColor</span><span class="o">(</span><span class="s">"黑色"</span><span class="o">);</span>
+        <span class="n">phone</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">"荣耀"</span><span class="o">);</span>
+        <span class="nc">Phone</span> <span class="n">clonePhone</span> <span class="o">=</span> <span class="n">phone</span><span class="o">.</span><span class="na">cloneNew</span><span class="o">();</span>
+      <span class="c1">//拷贝后进行修改</span>
+        <span class="n">clonePhone</span><span class="o">.</span><span class="na">setName</span><span class="o">(</span><span class="s">"华为"</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"phone:"</span><span class="o">+</span><span class="n">phone</span><span class="o">);</span>
+        <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">"clonePhone:"</span><span class="o">+</span><span class="n">clonePhone</span><span class="o">);</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p><img class="image image--xl" src="/assets/images/2021-08-12/image-20210803113104044.png" alt="image-20210803113104044" /></p>
+
+<h3 id="总结-3">总结</h3>
+
+<p>优点：</p>
+
+<ol>
+  <li>快速创建复杂对象实例</li>
+  <li>逃避构造函数约束</li>
+</ol>
+
+<p>缺点：</p>
+
+<ol>
+  <li>引用含有循环引用如何处理</li>
+  <li>必须实现Cloneable接口</li>
+</ol>
+:ET
